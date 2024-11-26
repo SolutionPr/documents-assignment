@@ -21,5 +21,5 @@ class DocumentSerializer(ModelSerializer):
             
         # Convert created_at to a timestamp
         if instance.created_at:
-            representation['created_at'] = int(time.mktime(instance.created_at.timetuple()))
+            representation['created_at'] =instance.created_at.date()
         return representation
