@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders', # corsheader
     'rest_framework',  # restframework
     'document_listing_app', #custom app
 ]
@@ -48,6 +49,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware', 
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -56,6 +58,12 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'documnet_listing_project.urls'
+
+CORS_ALLOWED_ORIGINS = [
+    "https://127.0.0.1:3000",
+    "https://localhost:3000",
+    'https://2a81-2404-7c80-c-4a2e-c9e-702d-963-ea99.ngrok-free.app'
+]
 
 TEMPLATES = [
     {

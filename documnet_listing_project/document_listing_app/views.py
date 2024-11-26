@@ -47,7 +47,7 @@ class DocumentsListingView(APIView):
                 serializer.save()
 
                 logger.info(f'{file.name} successfully upload')
-                return Response({"messsage":serializer.data},status=status.HTTP_201_CREATED)
+                return Response({"data":serializer.data},status=status.HTTP_201_CREATED)
             
             logger.error('Unable to  store the data')
             return Response({"errors":"unable to  store the data"},status=status.HTTP_400_BAD_REQUEST)
@@ -57,13 +57,15 @@ class DocumentsListingView(APIView):
 
 
     # to  retrieve documents
-    def get(self,request):
+    def get(self,request,id=None):
         try:
             search_query = request.query_params.get('search', None)
             
             if search_query:
                 # Search documents based on the name
                 document_obj = Document.objects.filter(name__icontains=search_query)
+            elif id:
+                document_obj=Document.objects.filter(id=id)
             else:
                 # fetch data in the  sorted form on the  basis of name and date
                 document_obj=Document.objects.all().order_by('-created_at', 'name')
@@ -80,6 +82,23 @@ class DocumentsListingView(APIView):
         except Exception as e:
             logger.error(f'unable to  fetch the  file due to : {e}')
             return Response({"errors": "An unexpected error occurred. Please try again later."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    # for  delete the  file in  model
+    def delete(self,request,id):
+        try:
+            if id:
+                document_obj=Document.objects.get(id=id)
+                document_obj.delete()
+                return Response({"message":"Data deleted successfully"},status=status.HTTP_200_OK)
+            return Response({"message":"Please chose the  file  to  delete"},status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            logger.error(f'unable to  delete the  file due to : {e}')
+            return Response({"errors": "An unexpected error occurred. Please try again later."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        
+
+
+
 
 
 
