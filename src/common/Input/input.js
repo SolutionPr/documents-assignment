@@ -1,9 +1,10 @@
 import React from 'react'
 import { Input } from 'antd'
 
-const CommonInput = () => {
+const CommonInput = ({ handledata, uniqueKey }) => {
+
     return (
-        <Input type="file" placeholder="Upload file" />
+        <Input key={uniqueKey} type="file" onChange={handledata} placeholder="Upload file" />
     )
 }
 

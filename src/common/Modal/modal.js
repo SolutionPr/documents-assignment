@@ -3,7 +3,7 @@ import { Button, Modal, Space } from "antd";
 import CommonInput from "../Input/input";
 
 
-const CommonModal = () => {
+const CommonModal = ({ btn, handleChange, filedata, keydata, reset }) => {
     const [open, setOpen] = useState(false);
     const showModal = () => {
         setOpen(true);
@@ -13,12 +13,14 @@ const CommonModal = () => {
     };
     const handleCancel = () => {
         setOpen(false);
+        filedata(null);
+        reset();
     };
     return (
         <>
             <Space>
                 <Button type="primary" onClick={showModal}>
-                    Open Modal
+                    {btn}
                 </Button>
             </Space>
             <Modal
@@ -33,7 +35,7 @@ const CommonModal = () => {
                     </>
                 )}
             >
-                <CommonInput />
+                <CommonInput handledata={handleChange} uniqueKey={keydata} />
             </Modal>
         </>
     );
