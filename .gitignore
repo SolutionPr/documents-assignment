@@ -10,3 +10,7 @@ db.sqlite3
 
 #  add the migration files
 *_initial.py
+
+
+#add logs file to git ignor
+*.log 
