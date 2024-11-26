@@ -62,7 +62,7 @@ ROOT_URLCONF = 'documnet_listing_project.urls'
 CORS_ALLOWED_ORIGINS = [
     "https://127.0.0.1:3000",
     "https://localhost:3000",
-    'https://2a81-2404-7c80-c-4a2e-c9e-702d-963-ea99.ngrok-free.app'
+    'http://35.154.171.148:3019'
 ]
 
 TEMPLATES = [
