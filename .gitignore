@@ -7,3 +7,6 @@ env
 
 # add the  database 
 db.sqlite3
+
+#  add the migration files
+*_initial.py
