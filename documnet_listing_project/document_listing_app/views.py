@@ -3,12 +3,18 @@ from  rest_framework import status
 from rest_framework.response import Response
 from .serializer import DocumentSerializer
 from .models import Document
+from rest_framework.pagination import PageNumberPagination
 import logging
 
 
 # logger setup
 logger=logging.getLogger('document_listing_app')
 
+
+class DocumentListPagination(PageNumberPagination):
+    page_size = 10   #Number of items per page
+    page_size_query_param = 'page_size'  
+    max_page_size = 15  # Maximum items per page
 
 # view  for  the  documents
 class DocumentsListingView(APIView):
@@ -53,12 +59,23 @@ class DocumentsListingView(APIView):
     # to  retrieve documents
     def get(self,request):
         try:
-            # fetch data in the  sorted form on the  basis of name and date
-            document_obj=Document.objects.all().order_by('-created_at', 'name')
+            search_query = request.query_params.get('search', None)
+            
+            if search_query:
+                # Search documents based on the name
+                document_obj = Document.objects.filter(name__icontains=search_query)
+            else:
+                # fetch data in the  sorted form on the  basis of name and date
+                document_obj=Document.objects.all().order_by('-created_at', 'name')
+
+            # apply pagination
+            paginator=DocumentListPagination()
+            pginated_doc=paginator.paginate_queryset(document_obj,request)
 
             # serilize the  data
-            serializer=DocumentSerializer(document_obj,many=True)
-            return Response({'data':serializer.data},status=status.HTTP_200_OK)
+            serializer=DocumentSerializer(pginated_doc,many=True)
+            # return Response({'data':serializer.data},status=status.HTTP_200_OK)
+            return paginator.get_paginated_response(serializer.data)
         
         except Exception as e:
             logger.error(f'unable to  fetch the  file due to : {e}')
