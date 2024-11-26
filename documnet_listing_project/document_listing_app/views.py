@@ -48,6 +48,22 @@ class DocumentsListingView(APIView):
         except Exception as e:
             logger.error(f'file is not  uploaded due to : {e}')
             return Response({"errors": "An unexpected error occurred. Please try again later."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+    # to  retrieve documents
+    def get(self,request):
+        try:
+            # fetch data in the  sorted form on the  basis of name and date
+            document_obj=Document.objects.all().order_by('-created_at', 'name')
+
+            # serilize the  data
+            serializer=DocumentSerializer(document_obj,many=True)
+            return Response({'data':serializer.data},status=status.HTTP_200_OK)
         
+        except Exception as e:
+            logger.error(f'unable to  fetch the  file due to : {e}')
+            return Response({"errors": "An unexpected error occurred. Please try again later."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 
     
