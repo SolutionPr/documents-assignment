@@ -1,40 +1,54 @@
 import React, { useState } from 'react';
-import { Table, Input, Button, Space } from 'antd';
+import { Table, Input, Button, Space, Modal } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
+import { useDispatch } from 'react-redux';
+import { delete_file, Get_Files } from '../../redux/authslice';
 
-const CommonTable = () => {
+const CommonTable = ({ Alldata }) => {
     const [searchText, setSearchText] = useState('');
     const [sortedInfo, setSortedInfo] = useState({});
+    const [currentPage, setCurrentPage] = useState(1);
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const dispatch = useDispatch();
 
-    const data = [
-        {
-            id: 17,
-            name: "cover_letter.txt",
-            content: "Job Specific Cover Letter\r\n\r\nI am excited to apply for the position that involves working with Django Rest Framework, API integration, and various technologies. With a solid background in Python programming, data analysis, and hands-on experience in integrating third-party APIs, I am confident in my ability to make a meaningful contribution to your team.\r\n\r\nAt Tricky Web Solutions, I have successfully developed and maintained RESTful APIs, ensuring efficient data communication while enhancing applications with LangChain for natural language processing. My recent internship at Applify further solidified my skills in machine learning and data handling, where I gathered and cleaned data for analysis and created ML models.\r\n\r\nAdditionally, I have worked extensively with AWS, utilizing S3 for effective file storage solutions. My experience with OpenAI technologies to generate text, image, and audio provides me with a diverse skill set that aligns well with this role.\r\n\r\nI am eager to bring my expertise to your organization, driving innovation and delivering impactful data-driven solutions. Thank you for considering my application; I look forward to discussing how I can contribute to your team.",
-            created_at: "2024-11-26T08:18:36.588328Z",
-            size: 1211.0
-        },
-        {
-            id: 18,
-            name: "cqqover_letter.txt",
-            content: "Job Specific Cover Letter\r\n\r\nI am excited to apply for the position that involves working with Django Rest Framework, API integration, and various technologies. With a solid background in Python programming, data analysis, and hands-on experience in integrating third-party APIs, I am confident in my ability to make a meaningful contribution to your team.\r\n\r\nAt Tricky Web Solutions, I have successfully developed and maintained RESTful APIs, ensuring efficient data communication while enhancing applications with LangChain for natural language processing. My recent internship at Applify further solidified my skills in machine learning and data handling, where I gathered and cleaned data for analysis and created ML models.\r\n\r\nAdditionally, I have worked extensively with AWS, utilizing S3 for effective file storage solutions. My experience with OpenAI technologies to generate text, image, and audio provides me with a diverse skill set that aligns well with this role.\r\n\r\nI am eager to bring my expertise to your organization, driving innovation and delivering impactful data-driven solutions. Thank you for considering my application; I look forward to discussing how I can contribute to your team.",
-            created_at: "2024-11-26T08:18:36.588328Z",
-            size: 121111.0
-        },
-    ];
+    const data = Alldata?.results || [];
+    const totalRecords = Alldata?.count || 0;
 
-    const handleSearch = (e) => {
-        setSearchText(e.target.value);
+    const handleSearch = () => {
+        const trimmedSearch = searchText.trim();
+        setCurrentPage(1);
+        dispatch(Get_Files(trimmedSearch, 1));
     };
 
-    const handleSort = (pagination, filters, sorter) => {
+    const handleReset = () => {
+        setSearchText('');
+        setCurrentPage(1);
+        dispatch(Get_Files('', 1));
+    };
+
+    const handledelete = (id) => {
+        dispatch(delete_file(id, dispatch));
+    };
+
+    const handleSort = (sorter) => {
         setSortedInfo(sorter);
     };
 
-    const filteredData = data.filter(item =>
-        item.name.toLowerCase().includes(searchText.toLowerCase()) ||
-        item.content.toLowerCase().includes(searchText.toLowerCase())
-    );
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+        dispatch(Get_Files(searchText, page));
+    };
+
+    const handleFileClick = (file) => {
+        setSelectedFile(file);
+        setIsModalVisible(true);
+    };
+
+    const handleModalClose = () => {
+        setIsModalVisible(false);
+        setSelectedFile(null);
+    };
 
     const columns = [
         {
@@ -44,6 +58,9 @@ const CommonTable = () => {
             sorter: (a, b) => a.name.localeCompare(b.name),
             sortOrder: sortedInfo.columnKey === 'name' && sortedInfo.order,
             ellipsis: true,
+            render: (text, record) => (
+                <a onClick={() => handleFileClick(record)}>{text}</a>
+            ),
         },
         {
             title: 'Created Date',
@@ -59,6 +76,15 @@ const CommonTable = () => {
             sorter: (a, b) => a.size - b.size,
             sortOrder: sortedInfo.columnKey === 'size' && sortedInfo.order,
         },
+        {
+            title: 'Action',
+            key: 'action',
+            render: (_, record) => (
+                <Space size="middle">
+                    <a className="btn btn-info" onClick={() => handledelete(record?.id)}>Delete</a>
+                </Space>
+            ),
+        },
     ];
 
     return (
@@ -67,24 +93,58 @@ const CommonTable = () => {
                 <Input
                     placeholder="Search by document name or content"
                     value={searchText}
-                    onChange={handleSearch}
+                    onChange={(e) => setSearchText(e.target.value)}
                     prefix={<SearchOutlined />}
                     style={{ width: 300 }}
                 />
                 <Button
-                    onClick={() => setSearchText('')}
+                    onClick={handleSearch}
                     type="primary"
                     style={{ marginLeft: 10 }}
                 >
-                    Reset Search
+                    Search
+                </Button>
+                <Button
+                    onClick={handleReset}
+                    type="default"
+                    style={{ marginLeft: 10 }}
+                >
+                    Reset
                 </Button>
             </Space>
             <Table
                 columns={columns}
-                dataSource={filteredData}
+                dataSource={data}
+                pagination={{
+                    current: currentPage,
+                    total: totalRecords,
+                    pageSize: 10,
+                    onChange: handlePageChange,
+                }}
                 onChange={handleSort}
                 rowKey="id"
             />
+            <Modal
+                title="File Details"
+                visible={isModalVisible}
+                onCancel={handleModalClose}
+                footer={null}
+                width={600}
+            >
+                {selectedFile ? (
+                    <div>
+                        <h3>Document Name: {selectedFile.name}</h3>
+                        <p><strong>Created At:</strong> {new Date(selectedFile.created_at).toLocaleString()}</p>
+                        <p><strong>Size:</strong> {selectedFile.size} KB</p>
+                        <div>
+                            <strong>File Content:</strong>
+                            <pre>{selectedFile.content || 'No content available'}</pre>
+                        </div>
+                    </div>
+                ) : (
+                    <p>Loading file details...</p>
+                )}
+            </Modal>
         </div>
     );
 };
