@@ -1,10 +1,14 @@
-import logo from './logo.svg';
 import './App.css';
+import CommonModal from './common/Modal/modal';
+import CommonTable from './common/table/table';
 
 function App() {
   return (
     <div className="App">
-      <h1>hello</h1>
+      <CommonModal />
+      <div className="container-sm">
+        <CommonTable />
+      </div>
     </div>
   );
 }
