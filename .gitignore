@@ -1,2 +1,9 @@
 # add the  env file
 env
+
+# python  cache file
+*.pyc
+
+
+# add the  database 
+db.sqlite3
