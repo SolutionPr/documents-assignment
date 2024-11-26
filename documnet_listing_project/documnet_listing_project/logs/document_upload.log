@@ -1,3 +1,0 @@
-2024-11-26 15:10:25,334 - INFO - Attempting to upload file: cover_letter.txt - File: views.py
-2024-11-26 15:10:26,275 - INFO - cover_letter.txt successfully upload - File: views.py
-2024-11-26 15:10:50,039 - ERROR - invalid file type file_name:Aashish_Data_Science_new.pdf. Fie type must be text  - File: views.py
