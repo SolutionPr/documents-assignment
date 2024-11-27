@@ -1,5 +1,5 @@
-# 🗂️ CURD documents-assignment  
-A simple project for performing CRUD (Create, Read,Delete) operations on files, built with Django.
+# 🗂️ documents-assignment  
+A simple project for performing (Create, Read,Delete) operations on files, built with Django.
 
 
 ## 📖 Table of Contents  
