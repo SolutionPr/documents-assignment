@@ -3,7 +3,11 @@
 # setup instruction
 gitclone: git clone https://github.com/SolutionPr/documents-assignment
 
-swith to backend: git checkout backend
+# fetch all the  branch
+git fetch --all
+
+# swith to backend
+git checkout backend
 
 # create the  environmet file
 python -m venv env
