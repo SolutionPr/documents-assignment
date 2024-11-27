@@ -10,9 +10,9 @@ const CommonTable = ({ Alldata }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
-    const [sortedData, setSortedData] = useState(Alldata?.results || []);
     const dispatch = useDispatch();
 
+    const data = Alldata?.results || [];
     const totalRecords = Alldata?.count || 0;
 
     const handleSearch = () => {
@@ -32,28 +32,9 @@ const CommonTable = ({ Alldata }) => {
     };
 
     const handleSort = (pagination, filters, sorter) => {
-        const { columnKey, order } = sorter;
         setSortedInfo(sorter);
-
-        if (!order) {
-            setSortedData(Alldata?.results || []);
-        } else {
-            const sorted = [...sortedData].sort((a, b) => {
-                if (columnKey === 'name') {
-                    return order === 'ascend'
-                        ? a.name.localeCompare(b.name)
-                        : b.name.localeCompare(a.name);
-                } else if (columnKey === 'created_at') {
-                    return order === 'ascend'
-                        ? new Date(a.created_at) - new Date(b.created_at)
-                        : new Date(b.created_at) - new Date(a.created_at);
-                }
-                return 0;
-            });
-
-            setSortedData(sorted);
-        }
     };
+
 
     const handlePageChange = (page) => {
         setCurrentPage(page);
@@ -75,7 +56,7 @@ const CommonTable = ({ Alldata }) => {
             title: 'Document Name',
             dataIndex: 'name',
             key: 'name',
-            sorter: true,
+            sorter: (a, b) => a.name.localeCompare(b.name),
             sortOrder: sortedInfo.columnKey === 'name' && sortedInfo.order,
             ellipsis: true,
             render: (text, record) => (
@@ -86,8 +67,9 @@ const CommonTable = ({ Alldata }) => {
             title: 'Created Date',
             dataIndex: 'created_at',
             key: 'created_at',
-            sorter: true,
+            sorter: (a, b) => new Date(a.created_at),
             sortOrder: sortedInfo.columnKey === 'created_at' && sortedInfo.order,
+            render: (date) => new Date(date).toLocaleDateString(),
         },
         {
             title: 'Size',
@@ -100,16 +82,12 @@ const CommonTable = ({ Alldata }) => {
             key: 'action',
             render: (_, record) => (
                 <Space size="middle">
-                    <a
-                        className="btn btn-info"
-                        onClick={() => handleDelete(record?.id)}
-                    >
-                        Delete
-                    </a>
+                    <a onClick={() => handleDelete(record.id)}>Delete</a>
                 </Space>
             ),
         },
     ];
+
 
     return (
         <div>
@@ -121,24 +99,16 @@ const CommonTable = ({ Alldata }) => {
                     prefix={<SearchOutlined />}
                     style={{ width: 300 }}
                 />
-                <Button
-                    onClick={handleSearch}
-                    type="primary"
-                    style={{ marginLeft: 10 }}
-                >
+                <Button onClick={handleSearch} type="primary">
                     Search
                 </Button>
-                <Button
-                    onClick={handleReset}
-                    type="default"
-                    style={{ marginLeft: 10 }}
-                >
+                <Button onClick={handleReset} type="default">
                     Reset
                 </Button>
             </Space>
             <Table
                 columns={columns}
-                dataSource={sortedData}
+                dataSource={data}
                 pagination={{
                     current: currentPage,
                     total: totalRecords,
@@ -148,29 +118,23 @@ const CommonTable = ({ Alldata }) => {
                 onChange={handleSort}
                 rowKey="id"
             />
+
             <Modal
                 title="File Details"
                 visible={isModalVisible}
                 onCancel={handleModalClose}
                 footer={null}
-                width={600}
             >
                 {selectedFile ? (
                     <div>
                         <h3>Document Name: {selectedFile.name}</h3>
                         <p>
                             <strong>Created At:</strong>{' '}
-                            {new Date(selectedFile.created_at).toLocaleString()}
+                            {new Date(selectedFile.created_at).toLocaleDateString()}
                         </p>
                         <p>
-                            <strong>Size:</strong> {selectedFile.size} KB
+                            <strong>Content:</strong> {selectedFile.content} KB
                         </p>
-                        <div>
-                            <strong>File Content:</strong>
-                            <pre>
-                                {selectedFile.content || 'No content available'}
-                            </pre>
-                        </div>
                     </div>
                 ) : (
                     <p>Loading file details...</p>
