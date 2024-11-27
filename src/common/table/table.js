@@ -10,9 +10,9 @@ const CommonTable = ({ Alldata }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
+    const [sortedData, setSortedData] = useState(Alldata?.results || []);
     const dispatch = useDispatch();
 
-    const data = Alldata?.results || [];
     const totalRecords = Alldata?.count || 0;
 
     const handleSearch = () => {
@@ -27,12 +27,32 @@ const CommonTable = ({ Alldata }) => {
         dispatch(Get_Files('', 1));
     };
 
-    const handledelete = (id) => {
+    const handleDelete = (id) => {
         dispatch(delete_file(id, dispatch));
     };
 
-    const handleSort = (sorter) => {
+    const handleSort = (pagination, filters, sorter) => {
+        const { columnKey, order } = sorter;
         setSortedInfo(sorter);
+
+        if (!order) {
+            setSortedData(Alldata?.results || []);
+        } else {
+            const sorted = [...sortedData].sort((a, b) => {
+                if (columnKey === 'name') {
+                    return order === 'ascend'
+                        ? a.name.localeCompare(b.name)
+                        : b.name.localeCompare(a.name);
+                } else if (columnKey === 'created_at') {
+                    return order === 'ascend'
+                        ? new Date(a.created_at) - new Date(b.created_at)
+                        : new Date(b.created_at) - new Date(a.created_at);
+                }
+                return 0;
+            });
+
+            setSortedData(sorted);
+        }
     };
 
     const handlePageChange = (page) => {
@@ -55,7 +75,7 @@ const CommonTable = ({ Alldata }) => {
             title: 'Document Name',
             dataIndex: 'name',
             key: 'name',
-            sorter: (a, b) => a.name.localeCompare(b.name),
+            sorter: true,
             sortOrder: sortedInfo.columnKey === 'name' && sortedInfo.order,
             ellipsis: true,
             render: (text, record) => (
@@ -66,22 +86,26 @@ const CommonTable = ({ Alldata }) => {
             title: 'Created Date',
             dataIndex: 'created_at',
             key: 'created_at',
-            sorter: (a, b) => new Date(a.created_at) - new Date(b.created_at),
+            sorter: true,
             sortOrder: sortedInfo.columnKey === 'created_at' && sortedInfo.order,
         },
         {
             title: 'Size',
             dataIndex: 'size',
             key: 'size',
-            sorter: (a, b) => a.size - b.size,
-            sortOrder: sortedInfo.columnKey === 'size' && sortedInfo.order,
+            sorter: false,
         },
         {
             title: 'Action',
             key: 'action',
             render: (_, record) => (
                 <Space size="middle">
-                    <a className="btn btn-info" onClick={() => handledelete(record?.id)}>Delete</a>
+                    <a
+                        className="btn btn-info"
+                        onClick={() => handleDelete(record?.id)}
+                    >
+                        Delete
+                    </a>
                 </Space>
             ),
         },
@@ -114,7 +138,7 @@ const CommonTable = ({ Alldata }) => {
             </Space>
             <Table
                 columns={columns}
-                dataSource={data}
+                dataSource={sortedData}
                 pagination={{
                     current: currentPage,
                     total: totalRecords,
@@ -134,11 +158,18 @@ const CommonTable = ({ Alldata }) => {
                 {selectedFile ? (
                     <div>
                         <h3>Document Name: {selectedFile.name}</h3>
-                        <p><strong>Created At:</strong> {new Date(selectedFile.created_at).toLocaleString()}</p>
-                        <p><strong>Size:</strong> {selectedFile.size} KB</p>
+                        <p>
+                            <strong>Created At:</strong>{' '}
+                            {new Date(selectedFile.created_at).toLocaleString()}
+                        </p>
+                        <p>
+                            <strong>Size:</strong> {selectedFile.size} KB
+                        </p>
                         <div>
                             <strong>File Content:</strong>
-                            <pre>{selectedFile.content || 'No content available'}</pre>
+                            <pre>
+                                {selectedFile.content || 'No content available'}
+                            </pre>
                         </div>
                     </div>
                 ) : (
